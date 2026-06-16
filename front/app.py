@@ -19,10 +19,9 @@ with tab1:
         col1, col2 = st.columns(2)
         with col1:
             log_date = st.date_input("날짜(Date)", date.today())
-            time_slot = st.selectbox("시간대(Time Slot)", [
-                "06:00-09:00", "09:00-12:00", "12:00-15:00", 
-                "15:00-18:00", "18:00-21:00", "21:00-24:00", "00:00-06:00"
-            ])
+            granular_time_slots = [f"{i:02d}:00-{i+1:02d}:00" for i in range(24)]
+            time_slot = st.sidebar.selectbox("⏰ 시간대", granular_time_slots)
+            
             period_type = st.radio("기간 유형", ["평시", "시험기간", "방학"], horizontal=True)
         with col2:
             activity = st.text_input("활동(Activity) (예: 공부, 데이터베이스, 운동 등)")
