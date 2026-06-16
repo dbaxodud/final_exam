@@ -35,7 +35,7 @@ with tab1:
             
         with col2:
             # [요구사항 1] 활동 입력 UI 개선 (selectbox + 직접 입력)
-            activity_options = ["공부", "과제", "독서", "운동", "회의", "프로그래밍", "데이터베이스", "기타(직접 입력)"]
+            activity_options = ["공부", "과제", "독서", "운동", "회의", "프로그래밍", "기타(직접 입력)"]
             selected_activity = st.selectbox("🎯 활동 (Activity)", activity_options)
             
             # '기타(직접 입력)' 선택 시 텍스트 입력창 표시
