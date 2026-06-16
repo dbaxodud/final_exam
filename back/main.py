@@ -9,7 +9,6 @@ app = FastAPI(title="FocusFlow Backend Engine")
 
 DB_FILE = "logs.json"
 
-# 데이터 구조 정의
 class LogEntry(BaseModel):
     date: str
     time_slot: str
@@ -20,7 +19,6 @@ class LogEntry(BaseModel):
 class AnalysisRequest(BaseModel):
     period_type: str
 
-# 초기 데이터 로드 함수
 def load_logs():
     if not os.path.exists(DB_FILE):
         return []
@@ -30,7 +28,6 @@ def load_logs():
     except:
         return []
 
-# 데이터 저장 함수
 def save_logs(logs):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(logs, f, ensure_ascii=False, indent=4)
@@ -46,7 +43,6 @@ def add_log(entry: LogEntry):
     save_logs(logs)
     return {"status": "success", "message": "Log saved successfully"}
 
-# [요구사항 2] 개별 로그 삭제 API 추가
 @app.delete("/log/{index}")
 def delete_log(index: int):
     logs = load_logs()
@@ -69,7 +65,6 @@ def analyze_data(req: AnalysisRequest):
     
     df = pd.DataFrame(logs)
     
-    # 필터링 규칙
     if req.period_type != "전체":
         df = df[df["period_type"] == req.period_type]
         if df.empty:
@@ -77,38 +72,30 @@ def analyze_data(req: AnalysisRequest):
             
     total_logs = len(df)
     
-    # 1. 시간대별 분석
     time_grouped = df.groupby("time_slot")["focus_score"].mean().reset_index()
     chart_data = time_grouped.to_dict(orient="records")
     golden_time = time_grouped.sort_values(by="focus_score", ascending=False).iloc[0]["time_slot"]
     
-    # 2. 요일별 분석 (날짜 데이터 활용)
     df['date_parsed'] = pd.to_datetime(df['date'])
     df['weekday'] = df['date_parsed'].dt.day_name()
-    # 요일 순서 정렬을 위한 카테고리화
     weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     df['weekday'] = pd.Categorical(df['weekday'], categories=weekday_order, ordered=True)
     
     weekday_grouped = df.groupby("weekday", observed=False)["focus_score"].mean().reset_index()
-    # 요일 한글 변환 매핑
     ko_weekdays = {'Monday': '월요일', 'Tuesday': '화요일', 'Wednesday': '수요일', 
                    'Thursday': '목요일', 'Friday': '금요일', 'Saturday': '토요일', 'Sunday': '일요일'}
     weekday_grouped['weekday'] = weekday_grouped['weekday'].map(ko_weekdays)
     weekday_chart_data = weekday_grouped.to_dict(orient="records")
     
-    # 최적 요일 산출
     best_weekday_eng = df.groupby("weekday", observed=False)["focus_score"].mean().idxmax()
     golden_weekday = ko_weekdays[best_weekday_eng]
 
-    # [요구사항 3] 활동별 평균 집중도 순위 연산 추가
     activity_grouped = df.groupby("activity")["focus_score"].mean().sort_values(ascending=False).reset_index()
     activity_ranking = activity_grouped.to_dict(orient="records")
 
-    # [요구사항 5] 최근 집중도 추세 데이터 추출 (시간순 정렬 후 최신 15개 기록)
     trend_df = df.sort_values(by="date_parsed").tail(15)
     trend_data = trend_df[["date", "activity", "focus_score"]].to_dict(orient="records")
 
-    # 3. 이상 패턴 감지 로직 (기존 유지)
     recent_focus = df.sort_values(by="date_parsed").tail(3)["focus_score"].mean()
     if recent_focus <= 2.5:
         anomaly_status = "warning"
@@ -120,7 +107,6 @@ def analyze_data(req: AnalysisRequest):
         anomaly_status = "info"
         anomaly_msg = "✅ 안정적: 바이오리듬이 평온한 상태를 유지하고 있습니다. 현재 루틴을 신뢰하세요."
 
-    # 4. 일정 재배치 가이드라인 (기존 유지)
     reschedule_recs = []
     for act, group in df.groupby("activity"):
         avg_score = group["focus_score"].mean()
@@ -131,7 +117,6 @@ def analyze_data(req: AnalysisRequest):
         else:
             reschedule_recs.append(f"✅ **{act}**: 현재 아주 이상적인 몰입 효율({avg_score:.1f}점)을 보이고 있습니다. 고정 루틴으로 잠금하셔도 좋습니다.")
 
-    # 5. 자동 분석 리포트 생성 (기존 유지)
     bullets = [
         f"현재 분석 데이터셋의 총 누적 기록 수는 {total_logs}건입니다.",
         f"가장 높은 몰입도를 기록한 황금 시간대는 [{golden_time}] 코어 타임입니다.",
