@@ -3,12 +3,15 @@ import requests
 import pandas as pd
 from datetime import date
 
+# 페이지 기본 설정 (와이드 레이아웃)
 st.set_page_config(page_title="FocusFlow Pro", page_icon="⏱️", layout="wide")
 
 BACKEND_URL = "http://backend:8000"
 
 st.title("⏱️ FocusFlow: 고도화된 몰입 분석 및 루틴 최적화 엔진")
 st.markdown("입력된 행동 로그를 정밀 교차 분석하여 개인 맞춤형 타임라인 최적화 솔루션을 제공합니다.")
+
+# 데이터 불러오기 공통 처리
 try:
     logs_res = requests.get(f"{BACKEND_URL}/logs")
     raw_logs = logs_res.json() if logs_res.status_code == 200 else []
@@ -19,6 +22,9 @@ df_all = pd.DataFrame(raw_logs)
 
 tab1, tab2 = st.tabs(["📝 일과 기록하기", "📊 고도화 분석 대시보드"])
 
+# ==========================================
+# --- 탭 1: 기록 입력 폼 (UX 대대적 고도화) ---
+# ==========================================
 with tab1:
     st.subheader("📝 새로운 일과 데이터 입력")
     
@@ -28,7 +34,7 @@ with tab1:
         with col1:
             log_date = st.date_input("날짜(Date)", date.today())
             granular_time_slots = [f"{i:02d}:00-{i+1:02d}:00" for i in range(24)]
-            time_slot = st.selectbox("⏰ 시간대 지정", granular_time_slots, index=9) # 기본 09:00 타깃
+            time_slot = st.selectbox("⏰ 시간대 지정", granular_time_slots, index=9)
             period_type = st.radio("기간 유형", ["평시", "시험기간", "방학"], horizontal=True)
             
         with col2:
@@ -36,8 +42,7 @@ with tab1:
             if not df_all.empty:
                 recent_activities = df_all['activity'].value_counts().index.tolist()[:4]
             
-            clicked_activity = None
-            
+            clicked_activity = None 
             if recent_activities:
                 st.markdown("**💡 최근 자주 기록한 활동 클릭 시 자동 입력:**")
                 p_cols = st.columns(len(recent_activities))
@@ -45,7 +50,7 @@ with tab1:
                     if p_cols[idx].button(f"➕ {act}", key=f"pill_{idx}", use_container_width=True):
                         clicked_activity = act
             
-            base_options = ["공부", "과제", "독서", "운동", "프로그래밍", "회의", "휴식", "언어", "기타"]
+            base_options = ["공부", "과제", "독서", "운동", "프로그래밍", "데이터베이스", "회의", "휴식", "기타"]
             
             default_idx = 0
             if clicked_activity in base_options:
@@ -85,10 +90,14 @@ with tab1:
                     res = requests.post(f"{BACKEND_URL}/log", json=payload)
                     if res.status_code == 200:
                         st.success(f"🎯 '{final_activity}' 일과 로그가 데이터셋에 안전하게 동기화되었습니다!")
+                        st.session_state.analysis_performed = False # 새 데이터 입력 시 리포트 초기화
                         st.rerun()
                 except Exception as e:
                     st.error("백엔드 분석 서버와의 통신에 실패했습니다.")
 
+# ==========================================
+# --- 탭 2: 종합 분석 대시보드 (State 유지 고도화) ---
+# ==========================================
 with tab2:
     if df_all.empty:
         st.write("")
@@ -98,15 +107,30 @@ with tab2:
             st.markdown("<p style='text-align: center; font-weight: bold; color: #29b6f6;'>👇 아래 가이드를 따라 첫 발걸음을 떼어보세요!</p>", unsafe_allow_html=True)
             st.info("💡 **시작 가이드:** 상단의 **'📝 일과 기록하기'** 탭으로 이동하신 뒤 활동 종류, 시간대, 집중 점수를 설정하고 저장 버튼을 누르면 즉시 분석 엔진이 가동됩니다.")
     else:
+        # 🚨 [핵심 고도화] 분석 버튼 클릭 상태 기억장치 가동
+        if 'analysis_performed' not in st.session_state:
+            st.session_state.analysis_performed = False
+
         col_filter, col_btn = st.columns([3, 1])
         with col_filter:
             filter_type = st.selectbox("🔍 분석 데이터 범위 필터 선택", ["전체", "평시", "시험기간", "방학"])
+        
+        # 사용자가 필터 종류를 바꾸면 리포트를 잠시 가리고 다시 버튼을 누르도록 유도
+        if 'prev_filter' not in st.session_state:
+            st.session_state.prev_filter = filter_type
+        if st.session_state.prev_filter != filter_type:
+            st.session_state.analysis_performed = False
+            st.session_state.prev_filter = filter_type
+
         with col_btn:
             st.write("") 
             st.write("") 
-            run_button = st.button("🔄 분석 및 리포트 생성", type="primary", use_container_width=True)
+            # 이 버튼을 누르면 세션 상태가 True로 고정됩니다.
+            if st.button("🔄 분석 및 리포트 생성", type="primary", use_container_width=True):
+                st.session_state.analysis_performed = True
         
-        if run_button:
+        # 버튼이 눌린 상태(True)라면 상시 리포트를 화면에 유지합니다.
+        if st.session_state.analysis_performed:
             try:
                 analyze_res = requests.post(f"{BACKEND_URL}/analyze", json={"period_type": filter_type})
                 if analyze_res.status_code == 200:
@@ -120,6 +144,9 @@ with tab2:
                         
                         st.caption(f"📌 데이터 필터링 기준: **{filter_type}** | 누적 데이터: **{data['total_logs']}건** | 최종 기록일: **{latest_date}**")
                         
+                        # ========================================
+                        # 📊 [섹션 1] 핵심 분석 결과 및 신뢰도 지표
+                        # ========================================
                         st.markdown("### 📊 핵심 분석 결과")
                         with st.container(border=True):
                             m1, m2, m3, m4 = st.columns(4)
@@ -141,7 +168,9 @@ with tab2:
 
                         st.write("")
                         
-                      
+                        # ========================================
+                        # 📈 [섹션 2] 데이터 다차원 시각화 그래프 레이아웃
+                        # ========================================
                         st.markdown("### 📈 데이터 심층 분석 그래프")
                         
                         g_row1_col1, g_row1_col2 = st.columns(2)
@@ -182,6 +211,9 @@ with tab2:
 
                         st.write("")
 
+                        # ========================================
+                        # 🎯 [섹션 3] 몰입 추천 및 스케줄 재배치 의사결정 결과
+                        # ========================================
                         st.markdown("### 🎯 데이터 행동 추천 결과")
                         
                         st.markdown("##### 🚨 실시간 생체 리듬 및 이상 패턴 진단")
@@ -211,6 +243,9 @@ with tab2:
 
                         st.write("")
 
+                        # ========================================
+                        # 📋 [섹션 4] 종합 분석 리포트
+                        # ========================================
                         st.markdown("### 📋 FocusFlow AI 자동 종합 보고서")
                         with st.container(border=True):
                             col_rep1, col_rep2 = st.columns(2)
@@ -236,7 +271,9 @@ with tab2:
 
                         st.write("")
 
-
+                        # ========================================
+                        # 📜 [섹션 5] 원본 기록 관리 로그 및 행별 삭제 기능
+                        # ========================================
                         st.markdown("### 📜 원본 행동 기록 상세 로그 데이터")
                         if not df_filtered.empty:
                             with st.expander("🔍 상세 로그 데이터 테이블 편집 및 조회", expanded=True):
@@ -272,6 +309,9 @@ with tab2:
             except Exception as e:
                 st.error(f"통신 에러 발생: 백엔드 상태를 점검하세요. 상세 내용: {str(e)}")
 
+# ==========================================
+# 사이드바 (글로벌 리셋 기능 유지)
+# ==========================================
 with st.sidebar:
     st.header("⚙️ 글로벌 시스템 설정")
     st.markdown("앱 데이터셋 초기화 세팅 마스터 허브")
@@ -280,6 +320,7 @@ with st.sidebar:
         try:
             res = requests.post(f"{BACKEND_URL}/reset")
             if res.status_code == 200:
+                st.session_state.analysis_performed = False # 리셋 시 리포트 상태 초기화
                 st.sidebar.success("💥 전체 리셋 성공! 초기 청정 상태로 복구되었습니다.")
                 st.rerun()
         except Exception:
