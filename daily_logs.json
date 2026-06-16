@@ -1,0 +1,65 @@
+[
+  {
+    "date": "2026-06-10",
+    "time_slot": "09:00-12:00",
+    "activity": "데이터베이스 복습",
+    "focus_score": 4,
+    "period_type": "평시"
+  },
+  {
+    "date": "2026-06-10",
+    "time_slot": "15:00-18:00",
+    "activity": "팀 프로젝트 회의",
+    "focus_score": 3,
+    "period_type": "평시"
+  },
+  {
+    "date": "2026-06-11",
+    "time_slot": "21:00-24:00",
+    "activity": "오픈소스 과제",
+    "focus_score": 5,
+    "period_type": "시험기간"
+  },
+  {
+    "date": "2026-06-12",
+    "time_slot": "09:00-12:00",
+    "activity": "수학 교양 인강",
+    "focus_score": 2,
+    "period_type": "시험기간"
+  },
+  {
+    "date": "2026-06-12",
+    "time_slot": "21:00-24:00",
+    "activity": "파이썬 코딩",
+    "focus_score": 5,
+    "period_type": "시험기간"
+  },
+  {
+    "date": "2026-06-15",
+    "time_slot": "15:00-18:00",
+    "activity": "데이터베이스",
+    "focus_score": 3,
+    "period_type": "평시"
+  },
+  {
+    "date": "2026-06-15",
+    "time_slot": "21:00-24:00",
+    "activity": "데이터베이스",
+    "focus_score": 5,
+    "period_type": "시험기간"
+  },
+  {
+    "date": "2026-06-15",
+    "time_slot": "09:00-12:00",
+    "activity": "공부",
+    "focus_score": 3,
+    "period_type": "평시"
+  },
+  {
+    "date": "2026-06-16",
+    "time_slot": "12:00-15:00",
+    "activity": "공부",
+    "focus_score": 5,
+    "period_type": "시험기간"
+  }
+]
