@@ -43,17 +43,18 @@ with tab1:
             if not df_all.empty:
                 recent_activities = df_all['activity'].value_counts().index.tolist()[:4]
             
+            clicked_activity = None
+            
             if recent_activities:
                 st.markdown("**💡 최근 자주 기록한 활동 클릭 시 자동 입력:**")
                 # 헬퍼 버튼 정렬
                 p_cols = st.columns(len(recent_activities))
-                clicked_activity = None
                 for idx, act in enumerate(recent_activities):
                     if p_cols[idx].button(f"➕ {act}", key=f"pill_{idx}", use_container_width=True):
                         clicked_activity = act
             
             # 기본 정형 데이터 제공 및 선택 UI
-            base_options = ["공부", "과제", "독서", "운동", "프로그래밍", "데이터베이스", "회의", "휴식", "기타"]
+            base_options = ["공부", "과제", "독서", "운동", "프로그래밍", "회의", "휴식", "언어", "기타"]
             
             # 최근 칩을 클릭했다면 셀렉트박스 자동 동기화용 기본 인덱스 처리
             default_idx = 0
