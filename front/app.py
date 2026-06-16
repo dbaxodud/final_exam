@@ -25,7 +25,7 @@ with tab1:
             ])
             period_type = st.radio("기간 유형", ["평시", "시험기간", "방학"], horizontal=True)
         with col2:
-            activity = st.text_input("활동(Activity) (예: 알고리즘 백준 풀이, 데이터베이스 기출분석)")
+            activity = st.text_input("활동(Activity) (예: 공부, 데이터베이스, 운동 등)")
             focus_score = st.slider("집중도 (1: 매우 산만함 ~ 5: 완전 몰입)", 1, 5, 3)
             
         st.write("")
