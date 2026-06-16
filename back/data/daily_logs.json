@@ -61,12 +61,5 @@
     "activity": "공부",
     "focus_score": 5,
     "period_type": "시험기간"
-  },
-  {
-    "date": "2026-06-16",
-    "time_slot": "06:00-09:00",
-    "activity": "토익",
-    "focus_score": 3,
-    "period_type": "방학"
   }
 ]
