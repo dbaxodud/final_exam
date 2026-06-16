@@ -20,7 +20,7 @@ with tab1:
         with col1:
             log_date = st.date_input("날짜(Date)", date.today())
             granular_time_slots = [f"{i:02d}:00-{i+1:02d}:00" for i in range(24)]
-            time_slot = st.sidebar.selectbox("⏰ 시간대", granular_time_slots)
+            time_slot = st.selectbox("⏰ 시간대", granular_time_slots)
             
             period_type = st.radio("기간 유형", ["평시", "시험기간", "방학"], horizontal=True)
         with col2:
