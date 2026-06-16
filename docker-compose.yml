@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./back
+    container_name: focusflow_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./back/data:/app/data  # 컨테이너 재시작 시에도 JSON 데이터 보존
+    restart: always
+
+  frontend:
+    build: ./front
+    container_name: focusflow_frontend
+    ports:
+      - "8501:8501"
+    restart: always
+    depends_on:
+      - backend
